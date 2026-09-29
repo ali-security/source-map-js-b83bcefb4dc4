@@ -1,0 +1,22 @@
+name: seal-build
+
+# Build-and-pack only: the test suite runs on Travis (.travis.yml).
+on:
+  workflow_dispatch: {}
+
+jobs:
+  pack:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18.19.0
+      - run: npm install -g npm@10.2.3
+      - run: npm pack
+      - uses: actions/upload-artifact@v4
+        with:
+          name: source-map-js-tgz
+          path: source-map-js-*.tgz
+          if-no-files-found: error

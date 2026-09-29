@@ -2,12 +2,28 @@ language: node_js
 
 sudo: false
 
+# Node 18 = the runtime that packed the published tarball. Node 6 is the oldest
+# runtime the shipped 1.2.0 code loads on: lib/util.js uses ES2015 shorthand
+# properties (SyntaxError on 0.10/0.12) and lib/source-map-consumer.js uses
+# sloppy-mode `let` (SyntaxError on 4/5).
 node_js:
-  - "0.10"
-  - "0.12"
-  - "4"
-  - "5"
+  - "18"
   - "6"
+
+# yarn 1.22 installs fine on Node 18, but clean-publish@3 (a publish-only
+# devDependency) rejects Node < 12, so on the Node 6 leg install the locked
+# devDependencies with Node 18, then switch back to Node 6 to build and run
+# the test suite.
+install:
+  - |
+    case "$TRAVIS_NODE_VERSION" in
+      6) nvm install 18 && yarn --frozen-lockfile && nvm use "$TRAVIS_NODE_VERSION" ;;
+      *) yarn --frozen-lockfile ;;
+    esac
+
+script:
+  - node --version
+  - npm test
 
 cache:
   directories:
@@ -15,4 +31,3 @@ cache:
 
 os:
   - linux
-  - osx
